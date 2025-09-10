@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Exercícios de Português - Tipos de Verbos</title>
+  <style>
+    :root{--bg:#f8fafc;--card:#ffffff;--ink:#0f172a;--muted:#475569;--ok:#16a34a;--bad:#dc2626;--accent:#2563eb;--highlight:#f97316}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+    .wrap{max-width:980px;margin:24px auto;padding:0 16px}
+    h1{font-size:clamp(22px,4vw,34px);margin:12px 0 6px}
+    p{color:var(--muted)}
+    .bar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
+    button{border:0;background:var(--accent);color:#fff;padding:10px 14px;border-radius:14px;cursor:pointer;font-weight:700;box-shadow:0 6px 14px rgba(37,99,235,.2)}
+    button.secondary{background:#0ea5e9}
+    button.print{background:#64748b}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+    .card{background:var(--card);border-radius:18px;box-shadow:0 6px 20px rgba(2,6,23,.08);padding:14px}
+    .q{font-weight:700;margin-bottom:8px}
+    .answer{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}
+    .option{padding:6px 10px;border-radius:10px;border:1px solid #cbd5e1;cursor:pointer;background:#f1f5f9}
+    .option.selected{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .msg{height:20px;font-size:12px;margin-top:6px}
+    .ok{color:var(--ok)}
+    .bad{color:var(--bad)}
+    .muted{color:var(--muted)}
+    .highlight{color:var(--highlight);font-weight:bold}
+
+    @media print{
+      .bar{display:none}
+      .card{break-inside:avoid;box-shadow:none;border:1px solid #e2e8f0}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Exercícios de Português – Tipos de Verbos</h1>
+    <p>Leia a frase, observe o verbo <span class="highlight">destacado</span> e clique no <strong>tipo correto</strong> de verbo. Serão mostradas <strong>10</strong> frases por vez. Use "Gerar novos exercícios" para ver mais.</p>
+
+    <div class="bar">
+      <button id="regen">Gerar novos exercícios</button>
+      <button id="checkAll" class="secondary">Conferir tudo</button>
+      <button id="print" class="print">Imprimir</button>
+    </div>
+
+    <div id="grid" class="grid"></div>
+  </div>
+
+  <script>
+    // Banco de frases ampliado com pelo menos 10 exemplos de cada tipo
+    const SENTENCES = [
+      // Verbos Auxiliares (10)
+      {f:"Ela <span class='highlight'>está</span> correndo no parque.", a:"Verbo Auxiliar"},
+      {f:"Eu <span class='highlight'>vou</span> estudar amanhã.", a:"Verbo Auxiliar"},
+      {f:"Nós <span class='highlight'>estávamos</span> esperando você.", a:"Verbo Auxiliar"},
+      {f:"Eles <span class='highlight'>tinham</span> saído cedo.", a:"Verbo Auxiliar"},
+      {f:"Você <span class='highlight'>vai</span> gostar do filme.", a:"Verbo Auxiliar"},
+      {f:"Eu <span class='highlight'>tenho</span> estudado bastante.", a:"Verbo Auxiliar"},
+      {f:"Ela <span class='highlight'>foi</span> elogiada pela professora.", a:"Verbo Auxiliar"},
+      {f:"Nós <span class='highlight'>iremos</span> visitar a avó.", a:"Verbo Auxiliar"},
+      {f:"Eu <span class='highlight'>hei de</span> vencer.", a:"Verbo Auxiliar"},
+      {f:"Ele <span class='highlight'>anda</span> reclamando demais.", a:"Verbo Auxiliar"},
+
+      // Verbos Imperativos (10)
+      {f:"<span class='highlight'>Seja</span> forte!", a:"Verbo Imperativo"},
+      {f:"<span class='highlight'>Fecha</span> a porta agora.", a:"Verbo Imperativo"},
+      {f:"<span class='highlight'>Faça</span> seu dever de casa.", a:"Verbo Imperativo"},
+      {f:"<span class='highlight'>Venha</span> comigo já!", a:"Verbo Imperativo"},
+      {f:"<span class='highlight'>Escute</span> com atenção.", a:"Verbo Imperativo"},
+      {f:"<span class='highlight'>Acorde</span> cedo amanhã.", a:"Verbo Imperativo"},
+      {f:"<span class='highlight'>Estude</span> bastante para a prova.", a:"Verbo Imperativo"},
+      {f:"<span class='highlight'>Olhe</span> para frente.", a:"Verbo Imperativo"},
+      {f:"<span class='highlight'>Respeite</span> os mais velhos.", a:"Verbo Imperativo"},
+      {f:"<span class='highlight'>Pare</span> com isso agora.", a:"Verbo Imperativo"},
+
+      // Verbos Intransitivos (10)
+      {f:"O bebê <span class='highlight'>dormiu</span> tranquilo.", a:"Verbo Intransitivo"},
+      {f:"O sol <span class='highlight'>nasceu</span> cedo.", a:"Verbo Intransitivo"},
+      {f:"O menino <span class='highlight'>sorriu</span> feliz.", a:"Verbo Intransitivo"},
+      {f:"A menina <span class='highlight'>chorou</span> muito.", a:"Verbo Intransitivo"},
+      {f:"O cachorro <span class='highlight'>late</span> alto.", a:"Verbo Intransitivo"},
+      {f:"A planta <span class='highlight'>cresceu</span> rápido.", a:"Verbo Intransitivo"},
+      {f:"O atleta <span class='highlight'>caiu</span> no chão.", a:"Verbo Intransitivo"},
+      {f:"A estrela <span class='highlight'>brilhou</span> forte.", a:"Verbo Intransitivo"},
+      {f:"O vento <span class='highlight'>soprou</span> frio.", a:"Verbo Intransitivo"},
+      {f:"A criança <span class='highlight'>dormiu</span> cedo.", a:"Verbo Intransitivo"},
+
+      // Verbos de Ligação (10)
+      {f:"Ela <span class='highlight'>é</span> médica.", a:"Verbo de Ligação"},
+      {f:"Ele <span class='highlight'>parece</span> cansado hoje.", a:"Verbo de Ligação"},
+      {f:"O dia <span class='highlight'>estava</span> lindo.", a:"Verbo de Ligação"},
+      {f:"A comida <span class='highlight'>ficou</span> pronta.", a:"Verbo de Ligação"},
+      {f:"Ele <span class='highlight'>permanece</span> calmo.", a:"Verbo de Ligação"},
+      {f:"O menino <span class='highlight'>anda</span> nervoso.", a:"Verbo de Ligação"},
+      {f:"A situação <span class='highlight'>se mantém</span> estável.", a:"Verbo de Ligação"},
+      {f:"Ela <span class='highlight'>continua</span> feliz.", a:"Verbo de Ligação"},
+      {f:"O professor <span class='highlight'>tornou-se</span> diretor.", a:"Verbo de Ligação"},
+      {f:"A prova <span class='highlight'>foi</span> difícil.", a:"Verbo de Ligação"},
+
+      // Verbos Transitivos Diretos (10)
+      {f:"Ela <span class='highlight'>escreveu</span> uma carta.", a:"Verbo Transitivo Direto"},
+      {f:"Eu <span class='highlight'>vi</span> o filme ontem.", a:"Verbo Transitivo Direto"},
+      {f:"Ele <span class='highlight'>comprou</span> um carro novo.", a:"Verbo Transitivo Direto"},
+      {f:"Nós <span class='highlight'>fizemos</span> a tarefa.", a:"Verbo Transitivo Direto"},
+      {f:"Ela <span class='highlight'>leu</span> o livro inteiro.", a:"Verbo Transitivo Direto"},
+      {f:"Ele <span class='highlight'>beijou</span> a mãe.", a:"Verbo Transitivo Direto"},
+      {f:"O aluno <span class='highlight'>respondeu</span> a pergunta.", a:"Verbo Transitivo Direto"},
+      {f:"O gato <span class='highlight'>derrubou</span> o vaso.", a:"Verbo Transitivo Direto"},
+      {f:"O menino <span class='highlight'>pintou</span> o desenho.", a:"Verbo Transitivo Direto"},
+      {f:"O jogador <span class='highlight'>chutou</span> a bola.", a:"Verbo Transitivo Direto"},
+
+      // Verbos Transitivos Indiretos (10)
+      {f:"Eu <span class='highlight'>gosto</span> de música clássica.", a:"Verbo Transitivo Indireto"},
+      {f:"<span class='highlight'>Preciso</span> de ajuda agora.", a:"Verbo Transitivo Indireto"},
+      {f:"Ela <span class='highlight'>confia</span> nos amigos.", a:"Verbo Transitivo Indireto"},
+      {f:"Ele <span class='highlight'>assistiu</span> ao jogo.", a:"Verbo Transitivo Indireto"},
+      {f:"Nós <span class='highlight'>obedecemos</span> às regras.", a:"Verbo Transitivo Indireto"},
+      {f:"Ela <span class='highlight'>precisa</span> de descanso.", a:"Verbo Transitivo Indireto"},
+      {f:"Eu <span class='highlight'>consinto</span> com a decisão.", a:"Verbo Transitivo Indireto"},
+      {f:"O aluno <span class='highlight'>assistiu</span> à aula.", a:"Verbo Transitivo Indireto"},
+      {f:"O rapaz <span class='highlight'>aspira</span> ao cargo.", a:"Verbo Transitivo Indireto"},
+      {f:"A criança <span class='highlight'>precisa</span> de atenção.", a:"Verbo Transitivo Indireto"},
+
+      // Verbos Significativos (10)
+      {f:"<span class='highlight'>Correr</span> melhora a saúde.", a:"Verbo Significativo"},
+      {f:"<span class='highlight'>Brincar</span> é divertido.", a:"Verbo Significativo"},
+      {f:"<span class='highlight'>Estudar</span> abre portas.", a:"Verbo Significativo"},
+      {f:"<span class='highlight'>Trabalhar</span> enobrece o homem.", a:"Verbo Significativo"},
+      {f:"<span class='highlight'>Dormir</span> é necessário.", a:"Verbo Significativo"},
+      {f:"<span class='highlight'>Amar</span> faz bem ao coração.", a:"Verbo Significativo"},
+      {f:"<span class='highlight'>Sorrir</span> contagia.", a:"Verbo Significativo"},
+      {f:"<span class='highlight'>Viajar</span> ensina muito.", a:"Verbo Significativo"},
+      {f:"<span class='highlight'>Ler</span> aumenta o conhecimento.", a:"Verbo Significativo"},
+      {f:"<span class='highlight'>Cantar</span> alegra a alma.", a:"Verbo Significativo"}
+    ];
+
+    const OPTIONS = [
+      "Verbo Auxiliar",
+      "Verbo Imperativo",
+      "Verbo Intransitivo",
+      "Verbo Transitivo Direto",
+      "Verbo Transitivo Indireto",
+      "Verbo de Ligação",
+      "Verbo Significativo"
+    ];
+
+    function sample(arr, n){
+      const copy=[...arr];
+      for(let i=copy.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [copy[i],copy[j]]=[copy[j],copy[i]];
+      }
+      return copy.slice(0,n);
+    }
+
+    function render(){
+      const grid=document.getElementById('grid');
+      grid.innerHTML='';
+      const qs=sample(SENTENCES,10);
+      qs.forEach((q,i)=>{
+        const card=document.createElement('div');
+        card.className='card';
+        card.innerHTML=`<div class="q">${i+1}. ${q.f}</div>`;
+        const answer=document.createElement('div');
+        answer.className='answer';
+
+        OPTIONS.forEach(opt=>{
+          const span=document.createElement('span');
+          span.textContent=opt;
+          span.className='option';
+          span.addEventListener('click',()=>{
+            answer.querySelectorAll('.option').forEach(o=>o.classList.remove('selected'));
+            span.classList.add('selected');
+          });
+          answer.appendChild(span);
+        });
+
+        const btn=document.createElement('button');
+        btn.textContent='Conferir';
+        btn.addEventListener('click',()=>{
+          const selected=answer.querySelector('.option.selected');
+          const msg=card.querySelector('.msg');
+          if(selected && selected.textContent===q.a){
+            msg.textContent='✔ Correto!'; msg.className='msg ok';
+          } else {
+            msg.textContent='✘ Revise sua resposta'; msg.className='msg bad';
+          }
+        });
+
+        card.appendChild(answer);
+        card.appendChild(btn);
+        const msg=document.createElement('div');
+        msg.className='msg';
+        card.appendChild(msg);
+        grid.appendChild(card);
+      });
+    }
+
+    document.getElementById('regen').addEventListener('click',render);
+    document.getElementById('checkAll').addEventListener('click',()=>{
+      document.querySelectorAll('.card button').forEach(b=>b.click());
+    });
+    document.getElementById('print').addEventListener('click',()=>window.print());
+
+    render();
+  </script>
+</body>
+</html>
